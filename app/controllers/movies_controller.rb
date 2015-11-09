@@ -17,19 +17,25 @@ class MoviesController < ApplicationController
 
     if selected
       @selected = selected.keys()
+    elsif session[:selected]
+      @selected = session[:selected]
     else
       @selected = @all_ratings
     end
 
+    session[:selected] = @selected
+
     @movies = Movie.where(rating: @selected)
-    if params[:sort] == "release_date"
+    if params[:sort] == "release_date" or session[:sort] == "release_date"
       #@movies = @movies.sort_by(&:release_date)
       @sorted_by_release_date = true
-      @movies = Movie.order(:release_date)
-    elsif params[:sort] == "title"
+      session[:sort] = "release_date"
+      @movies = Movie.where(rating: @selected).order(:release_date)
+    elsif params[:sort] == "title" or session[:sort] == "title"
       #@movies = @movies.sort_by(&:title)
       @sorted_by_title = true
-      @movies = Movie.order(:title)
+      session[:sort] = "title"
+      @movies = Movie.where(rating: @selected).order(:title)
     end
   end
 
