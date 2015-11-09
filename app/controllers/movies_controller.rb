@@ -29,8 +29,10 @@ class MoviesController < ApplicationController
     if sort
       @sorted_by = sort.to_sym
       session[:sort] = @sorted_by
-    else
+    elsif session[:sort]
       @sorted_by = session[:sort].to_sym
+    else
+      @sorted_by = ''
     end
  
     @movies = Movie.where(rating: @selected).order(@sorted_by)
