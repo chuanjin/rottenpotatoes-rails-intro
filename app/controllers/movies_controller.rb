@@ -34,6 +34,8 @@ class MoviesController < ApplicationController
     else
       @sorted_by = ''
     end
+    puts @sorted_by
+
  
     @movies = Movie.where(rating: @selected).order(@sorted_by)
   end
