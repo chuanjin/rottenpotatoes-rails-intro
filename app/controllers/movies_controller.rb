@@ -12,7 +12,6 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.ratings
-
     selected = params[:ratings]
 
     if selected
@@ -25,19 +24,18 @@ class MoviesController < ApplicationController
 
     session[:selected] = @selected
 
-    @movies = Movie.where(rating: @selected)
-    if params[:sort] == "release_date" or session[:sort] == "release_date"
-      #@movies = @movies.sort_by(&:release_date)
-      @sorted_by_release_date = true
-      session[:sort] = "release_date"
-      @movies = Movie.where(rating: @selected).order(:release_date)
-    elsif params[:sort] == "title" or session[:sort] == "title"
-      #@movies = @movies.sort_by(&:title)
-      @sorted_by_title = true
-      session[:sort] = "title"
-      @movies = Movie.where(rating: @selected).order(:title)
+    sort = params[:sort]
+
+    if sort
+      @sorted_by = sort.to_sym
+      session[:sort] = @sorted_by
+    else
+      @sorted_by = session[:sort].to_sym
     end
+ 
+    @movies = Movie.where(rating: @selected).order(@sorted_by)
   end
+
 
   def new
     # default: render 'new' template
