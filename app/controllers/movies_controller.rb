@@ -1,4 +1,6 @@
 class MoviesController < ApplicationController
+  helper_method :hilight
+  helper_method :checked_rating?
 
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
@@ -12,32 +14,20 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.ratings
-    selected = params[:ratings]
 
-    if selected
-      @selected = selected.keys()
-    elsif session[:selected]
-      @selected = session[:selected]
+    session[:ratings] = params[:ratings] unless params[:ratings].nil?
+    session[:order] = params[:order] unless params[:order].nil?
+
+    if (params[:order].nil? && !session[:order].nil?) || (params[:ratings].nil? && !session[:ratings].nil?)
+      redirect_to movies_path(:ratings => session[:ratings], :order => session[:order])
+    elsif (session[:order].nil? && session[:ratings].nil?)
+      @movies = Movie.all
+    elsif session[:ratings].nil?
+      @movies = Movie.all.order(session[:order])
     else
-      @selected = @all_ratings
+      @movies = Movie.where(rating: session[:ratings].keys).order(session[:order])
     end
 
-    session[:selected] = @selected
-
-    sort = params[:sort]
-
-    if sort
-      @sorted_by = sort.to_sym
-      session[:sort] = @sorted_by
-    elsif session[:sort]
-      @sorted_by = session[:sort].to_sym
-    else
-      @sorted_by = ''
-    end
-    puts @sorted_by
-
- 
-    @movies = Movie.where(rating: @selected).order(@sorted_by)
   end
 
 
@@ -67,6 +57,21 @@ class MoviesController < ApplicationController
     @movie.destroy
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
+  end
+
+
+  def hilight(column)
+    if(session[:order].to_s == column)
+      return 'hilite'
+    else
+      return nil
+    end
+  end
+
+  def checked_rating?(rating)
+    checked_ratings = session[:ratings]
+    return true if checked_ratings.nil?
+    checked_ratings.include? rating
   end
 
 end
